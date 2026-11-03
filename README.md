@@ -1,16 +1,3 @@
----
-title: Face Redaction
-emoji: 🕶️
-colorFrom: green
-colorTo: gray
-sdk: gradio
-sdk_version: 6.31.0
-app_file: app.py
-pinned: false
-license: mit
-short_description: Find and hide every face in photos and videos
----
-
 # Face Redaction
 
 Find every face in a photo or video and hide it, while keeping the rest of the image intact. Works on group photos, dense crowds and low-light CCTV frames. In videos, a tracker keeps covering a face for a few frames when the detector misses it, so faces don't flash into view on blurry or turned-away frames.
