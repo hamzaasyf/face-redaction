@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.venv/
+.gradio/
+flagged/
+*.mp4
+!samples/*.mp4
