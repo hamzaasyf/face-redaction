@@ -1,0 +1,7 @@
+This folder is for the Hugging Face Space only.
+
+Hugging Face needs a settings header at the top of README.md (title, sdk, app_file and so on).
+GitHub shows that header as a table, so the GitHub README.md does not have it.
+
+When you upload this project to your Hugging Face Space, use huggingface/README.md
+as the Space's README.md (replace the root README.md with it in the Space only).
