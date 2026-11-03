@@ -4,7 +4,7 @@ Find every face in a photo or video and hide it, while keeping the rest of the i
 
 **Live demo:** [Hugging Face Space](https://huggingface.co/spaces/hamzaasyf/face-redaction)
 
-<!-- Add a screenshot here: assets/demo.png -->
+![Face Redaction](assets/cover.png)
 
 ## Features
 
@@ -17,6 +17,12 @@ Find every face in a photo or video and hide it, while keeping the rest of the i
 - **Evidence markers:** numbered boxes with confidence scores on the result, plus a clean download without boxes
 - **Reports:** JSON with every face box, or per-track counts for videos
 - **Audio kept:** redacted videos keep the original soundtrack
+
+![Three redaction styles](assets/styles.png)
+
+## The app
+
+![Face Redaction app](assets/app.png)
 
 ## How it works
 
