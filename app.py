@@ -15,6 +15,18 @@ from src.redact import draw_boxes, redact
 from src.video import redact_video, save_report
 from ui import CSS, HEAD, THEME, header_html, stats_html, video_header_html
 
+# This app runs on CPU. If the Hugging Face Space is set to ZeroGPU hardware,
+# ZeroGPU refuses to start unless at least one function is marked with
+# @spaces.GPU, so register a no-op one. Outside Hugging Face this does nothing.
+try:
+    import spaces
+
+    @spaces.GPU
+    def _zerogpu_check():
+        return None
+except ImportError:
+    pass
+
 SCAN_MODES = {"1×": (1.0,), "1× + 2×": (1.0, 2.0), "+3× CCTV": (1.0, 2.0, 3.0)}
 STYLE_NAMES = {"Pixelate": "pixelate", "Blur": "blur", "Black bar": "solid"}
 # Free CPU Spaces are slow, so videos are trimmed unless this is raised
@@ -26,7 +38,8 @@ def _parse_ids(text: str) -> set[int]:
     return {int(p) for p in (text or "").replace(";", ",").split(",") if p.strip().isdigit()}
 
 
-def process_photo(image, style, strength, padding, oval, scan, threshold, low_light, spare, show_boxes):
+def process_photo(image, style, strength, padding, oval, scan, threshold, low_light, spare, show_boxes,
+                  show_numbers):
     if image is None:
         raise gr.Error("Add a photo first.")
     bgr = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
@@ -44,7 +57,7 @@ def process_photo(image, style, strength, padding, oval, scan, threshold, low_li
     shown = clean
     if show_boxes:
         labels = [(i, f.score, i in spared) for i, f in enumerate(faces, start=1)]
-        shown = draw_boxes(clean, boxes, labels)
+        shown = draw_boxes(clean, boxes, labels, show_numbers=show_numbers)
 
     out_path = Path(tempfile.mkdtemp()) / "redacted.png"
     cv2.imwrite(str(out_path), clean)
@@ -113,7 +126,8 @@ with gr.Blocks(title="Face Redaction") as demo:
                     with gr.Accordion("More settings", open=False, elem_classes="more"):
                         p_threshold = gr.Slider(0.3, 0.9, value=0.6, step=0.05, label="Confidence threshold")
                         p_low_light = gr.Checkbox(value=False, label="Low-light boost for dark CCTV frames")
-                        p_boxes = gr.Checkbox(value=True, label="Show detection boxes on the result")
+                        p_boxes = gr.Checkbox(value=True, label="Show face markers on the result")
+                        p_numbers = gr.Checkbox(value=False, label="Show face numbers (to pick faces to exempt)")
                     p_spare = gr.Textbox(label="Exempt faces", placeholder="Face numbers to leave visible, e.g. 2, 5")
                     photo_btn = gr.Button("Redact faces", variant="primary", elem_classes="go")
                     gr.HTML('<p class="note">Photos are processed for this request only and are not stored.</p>')
@@ -131,7 +145,7 @@ with gr.Blocks(title="Face Redaction") as demo:
 
             photo_btn.click(
                 process_photo,
-                [photo_in, p_style, p_strength, p_padding, p_oval, p_scan, p_threshold, p_low_light, p_spare, p_boxes],
+                [photo_in, p_style, p_strength, p_padding, p_oval, p_scan, p_threshold, p_low_light, p_spare, p_boxes, p_numbers],
                 [photo_out, photo_stats, photo_file, photo_json, header],
             )
 
