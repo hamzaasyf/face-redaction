@@ -6,3 +6,6 @@ flagged/
 *.mp4
 !samples/*.mp4
 .DS_Store
+
+# Hugging Face Space files, uploaded with hf upload, not kept on GitHub
+huggingface/
