@@ -19,11 +19,7 @@ HEAD = """
 <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
 """
 
-THEME = gr.themes.Base(
-    font=[gr.themes.GoogleFont("Courier Prime"), gr.themes.Font("Courier New"), gr.themes.Font("monospace")],
-    font_mono=[gr.themes.GoogleFont("Courier Prime"), gr.themes.Font("Courier New"), gr.themes.Font("monospace")],
-    radius_size=gr.themes.sizes.radius_none,
-).set(
+_THEME_VARS = dict(
     body_background_fill=NAVY,
     body_text_color=INK,
     background_fill_primary=PAPER,
@@ -57,7 +53,18 @@ THEME = gr.themes.Base(
     panel_border_color=INK,
 )
 
+_base = gr.themes.Base(
+    font=[gr.themes.GoogleFont("Courier Prime"), gr.themes.Font("Courier New"), gr.themes.Font("monospace")],
+    font_mono=[gr.themes.GoogleFont("Courier Prime"), gr.themes.Font("Courier New"), gr.themes.Font("monospace")],
+    radius_size=gr.themes.sizes.radius_none,
+)
+# The design has one look. Use the same values in dark mode, so visitors whose
+# browser or Hugging Face account is set to dark see the same page.
+_dark = {f"{k}_dark": v for k, v in _THEME_VARS.items() if hasattr(_base, f"{k}_dark")}
+THEME = _base.set(**_THEME_VARS, **_dark)
+
 CSS = f"""
+:root, .dark {{ color-scheme: light; }}
 .gradio-container {{ max-width: 1240px !important; padding: 28px 40px 40px !important; }}
 footer:not(.foot) {{ display: none !important; }}
 
@@ -114,6 +121,7 @@ footer:not(.foot) {{ display: none !important; }}
 .stats b {{ font-family:'Lora', Georgia, serif; font-size:30px; display:block; line-height:1.1; }}
 .stats span {{ font-size:12px; letter-spacing:.5px; opacity:.8; }}
 .paperfile {{ border:1px solid {INK} !important; }}
+.paperfile table, .paperfile tr, .paperfile td, .paperfile tbody, .paperfile .file-preview-holder {{ background:{PAPER} !important; color:{INK} !important; }}
 .more.dark {{ background:{PAPER}; }}
 
 /* ---- CCTV monitor for video ---- */

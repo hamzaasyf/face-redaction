@@ -73,30 +73,34 @@ def redact(
 def _corners(img, p0, p1, color, thickness):
     """Draw only the four corners of a box, like a camera focus frame."""
     (x0, y0), (x1, y1) = p0, p1
-    L = max(4, int(min(x1 - x0, y1 - y0) * 0.28))
+    L = max(4, int(min(x1 - x0, y1 - y0) * 0.25))
     for (cx, cy, dx, dy) in ((x0, y0, 1, 1), (x1, y0, -1, 1), (x0, y1, 1, -1), (x1, y1, -1, -1)):
         cv2.line(img, (cx, cy), (cx + dx * L, cy), color, thickness, cv2.LINE_AA)
         cv2.line(img, (cx, cy), (cx, cy + dy * L), color, thickness, cv2.LINE_AA)
 
 
-def draw_boxes(image: np.ndarray, boxes, labels=None, color=(100, 220, 80),
-               spared_color=(40, 170, 255)) -> np.ndarray:
-    """Draw corner-bracket markers around faces, with a tag on the larger ones.
+def draw_boxes(image: np.ndarray, boxes, labels=None, show_numbers: bool = False,
+               color=(100, 220, 80), spared_color=(40, 170, 255)) -> np.ndarray:
+    """Draw thin corner-bracket markers around faces.
 
+    Small images are enlarged first so the lines stay thin and crisp on screen.
     labels: optional list of (number, score, spared) tuples, one per box.
-    Colours are BGR: green for redacted faces, amber for spared ones.
+    show_numbers: add a "#n score" tag on the larger faces. Spared faces are
+    always tagged. Colours are BGR: green for redacted faces, amber for spared.
     """
-    out = image.copy()
-    scale = max(image.shape[:2]) / 900
-    thickness = max(1, round(1.6 * scale))
+    up = max(1.0, 1600 / max(image.shape[:2]))
+    out = cv2.resize(image, None, fx=up, fy=up, interpolation=cv2.INTER_CUBIC) if up > 1 else image.copy()
+    boxes = [(x * up, y * up, w * up, h * up) for x, y, w, h in boxes]
+    scale = max(out.shape[:2]) / 900
+    thickness = max(1, round(1.1 * scale))
     font_scale = max(0.35, 0.42 * scale)
     for i, (x, y, w, h) in enumerate(boxes):
         num, score, spared = labels[i] if labels is not None else (i + 1, None, False)
         c = spared_color if spared else color
         p0, p1 = (int(x), int(y)), (int(x + w), int(y + h))
         _corners(out, p0, p1, c, thickness)
-        if w < 45 * scale and not spared:
-            continue  # small faces get corners only, so crowds stay readable
+        if not spared and (not show_numbers or w < 45 * scale):
+            continue  # corners only, unless numbers are switched on
         text = f"#{num}" + (f" {score:.2f}" if score is not None else "") + (" spared" if spared else "")
         (tw, th), base = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, font_scale, 1)
         ty = p0[1] - 4 if p0[1] - th - base - 6 > 0 else p1[1] + th + base + 4

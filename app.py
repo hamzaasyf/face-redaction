@@ -179,4 +179,4 @@ with gr.Blocks(title="Face Redaction") as demo:
     )
 
 if __name__ == "__main__":
-    demo.launch(theme=THEME, css=CSS, head=HEAD)
+    demo.launch(theme=THEME, css=CSS, head=HEAD, show_error=True)
